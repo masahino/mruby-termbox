@@ -1,0 +1,7 @@
+name: mruby-termbox
+description: mruby binding to Termbox
+author: masahino
+website: https://github.com/masahino/mruby-termbox
+protocol: git
+repository: https://github.com/masahino/mruby-termbox.git
+license: MIT
