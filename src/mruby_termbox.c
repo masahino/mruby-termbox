@@ -102,6 +102,7 @@ mrb_termbox_set_cursor(mrb_state *mrb, mrb_value self)
 mrb_value
 mrb_termbox_put_cell(mrb_state *mrb, mrb_value self)
 {
+  mrb_raise(mrb, E_NOTIMP_ERROR, "not yet implemented");
   return mrb_nil_value();
 }
 
@@ -110,10 +111,43 @@ mrb_termbox_change_cell(mrb_state *mrb, mrb_value self)
 {
   mrb_value str, ch;
   mrb_int x, y, fg, bg;
-  mrb_get_args(mrb, "iiSii", &x, &y, &str, &fg, &bg);
-  ch = mrb_funcall(mrb, str, "ord", 0);
+  mrb_get_args(mrb, "iioii", &x, &y, &str, &fg, &bg);
+  switch(mrb_type(str)) {
+    case MRB_TT_FIXNUM:
+    ch = str;
+    break;
+    case MRB_TT_STRING:
+    ch = mrb_funcall(mrb, str, "ord", 0);
+    break;
+    default:
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid parameter");
+  }
   tb_change_cell(x, y, mrb_fixnum(ch), fg, bg);
   return mrb_nil_value();
+}
+
+mrb_value
+mrb_termbox_blit(mrb_state *mrb, mrb_value self)
+{
+  mrb_raise(mrb, E_NOTIMP_ERROR, "not yet implemented");
+  return mrb_nil_value();
+}
+
+mrb_value
+mrb_termbox_cell_buffer(mrb_state *mrb, mrb_value self)
+{
+  mrb_raise(mrb, E_NOTIMP_ERROR, "not yet implemented");
+  return mrb_nil_value();
+}
+
+mrb_value
+mrb_termbox_select_input_mode(mrb_state *mrb, mrb_value self)
+{
+  mrb_int mode;
+  int ret;
+  mrb_get_args(mrb, "i", &mode);
+  ret = tb_select_input_mode(mode);
+  return mrb_fixnum_value(ret);
 }
 
 mrb_value
@@ -130,8 +164,9 @@ mrb_value
 mrb_termbox_peek_event(mrb_state *mrb, mrb_value self)
 {
   mrb_int timeout;
-  int ret;
+  int ret = 0;
   mrb_get_args(mrb, "i", &timeout);
+  mrb_raise(mrb, E_NOTIMP_ERROR, "not yet implemented");
   return mrb_fixnum_value(ret);
 }
 
@@ -150,6 +185,39 @@ mrb_termbox_poll_event(mrb_state *mrb, mrb_value self)
   DATA_TYPE(event_obj) = &mrb_termbox_event_data_type;
   DATA_PTR(event_obj) = event;
   return event_obj;
+}
+
+mrb_value
+mrb_termbox_utf8_char_length(mrb_state *mrb, mrb_value self)
+{
+  char *c;
+  mrb_int ret;
+
+  mrb_get_args(mrb, "z", &c);
+  ret = tb_utf8_char_length(c[0]);
+  return mrb_fixnum_value(ret);
+}
+
+mrb_value
+mrb_termbox_utf8_char_to_unicode(mrb_state *mrb, mrb_value self)
+{
+  char *c;
+  uint32_t out;
+  mrb_int ret;
+  mrb_get_args(mrb, "z", &c);
+  ret = tb_utf8_char_to_unicode(&out, c);
+  return mrb_fixnum_value(out);
+}
+
+mrb_value
+mrb_termbox_utf8_unicode_to_char(mrb_state *mrb, mrb_value self)
+{
+  mrb_int c;
+  char out[8];
+  int ret;
+  mrb_get_args(mrb, "i", &c);
+  ret = tb_utf8_unicode_to_char(out, c);
+  return mrb_str_new_cstr(mrb, out);
 }
 
 mrb_value
@@ -218,6 +286,9 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
   termbox_event = mrb_define_class_under(mrb, termbox_module, "Event", mrb->object_class);
   MRB_SET_INSTANCE_TT(termbox_event, MRB_TT_DATA);
 
+  mrb_define_const(mrb, termbox_module, "MOD_ALT", mrb_fixnum_value(TB_MOD_ALT));
+  mrb_define_const(mrb, termbox_module, "MOD_MOTION", mrb_fixnum_value(TB_MOD_MOTION));
+
   mrb_define_const(mrb, termbox_module, "DEFAULT", mrb_fixnum_value(TB_DEFAULT));
   mrb_define_const(mrb, termbox_module, "BLACK", mrb_fixnum_value(TB_BLACK));
   mrb_define_const(mrb, termbox_module, "RED", mrb_fixnum_value(TB_RED));
@@ -246,6 +317,7 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
 
   mrb_define_class_method(mrb, termbox_module, "present", mrb_termbox_present, MRB_ARGS_NONE());
 
+  mrb_define_const(mrb, termbox_module, "HIDE_CURSOR", mrb_fixnum_value(TB_HIDE_CURSOR));
   mrb_define_class_method(mrb, termbox_module, "set_cursor", mrb_termbox_set_cursor,
     MRB_ARGS_REQ(2));
 
@@ -253,6 +325,18 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
     MRB_ARGS_REQ(2));
   mrb_define_class_method(mrb, termbox_module, "change_cell", mrb_termbox_change_cell,
     MRB_ARGS_REQ(4));
+
+  mrb_define_class_method(mrb, termbox_module, "blit", mrb_termbox_blit, MRB_ARGS_REQ(5));
+
+  mrb_define_class_method(mrb, termbox_module, "cell_buffer", mrb_termbox_cell_buffer, MRB_ARGS_NONE());
+
+  mrb_define_const(mrb, termbox_module, "INPUT_CURRENT", mrb_fixnum_value(TB_INPUT_CURRENT));
+  mrb_define_const(mrb, termbox_module, "INPUT_ESC", mrb_fixnum_value(TB_INPUT_ESC));
+  mrb_define_const(mrb, termbox_module, "INPUT_ALT", mrb_fixnum_value(TB_INPUT_ALT));
+  mrb_define_const(mrb, termbox_module, "INPUT_MOUSE", mrb_fixnum_value(TB_INPUT_MOUSE));
+
+  mrb_define_class_method(mrb, termbox_module, "select_input_mode", mrb_termbox_select_input_mode,
+    MRB_ARGS_REQ(1));
 
   mrb_define_const(mrb, termbox_module, "OUTPUT_CURRENT", mrb_fixnum_value(TB_OUTPUT_CURRENT));
   mrb_define_const(mrb, termbox_module, "OUTPUT_NORMAL", mrb_fixnum_value(TB_OUTPUT_NORMAL));
@@ -265,6 +349,13 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
 
   mrb_define_class_method(mrb, termbox_module, "peek_event", mrb_termbox_peek_event, MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb, termbox_module, "poll_event", mrb_termbox_poll_event, MRB_ARGS_NONE());
+
+  mrb_define_class_method(mrb, termbox_module, "utf8_char_length",
+    mrb_termbox_utf8_char_length, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, termbox_module, "utf8_char_to_unicode",
+    mrb_termbox_utf8_char_to_unicode, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, termbox_module, "utf8_unicode_to_char",
+    mrb_termbox_utf8_unicode_to_char, MRB_ARGS_REQ(1));
 
   mrb_define_const(mrb, termbox_module, "EVENT_KEY", mrb_fixnum_value(TB_EVENT_KEY));
   mrb_define_const(mrb, termbox_module, "EVENT_RESIZE", mrb_fixnum_value(TB_EVENT_RESIZE));
