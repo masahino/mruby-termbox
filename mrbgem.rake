@@ -10,15 +10,33 @@ MRuby::Gem::Specification.new('mruby-termbox') do |spec|
     termbox_src = "#{termbox_build_root}/src"
     termbox_a = "#{termbox_build_root}/build/src/libtermbox.a"
 
-    unless File.exists?(termbox_a)
-      sh %Q{(cd #{build_dir}; git clone #{termbox_url})}
-      sh %Q{(cd #{termbox_build_root}; ./waf configure)}
-      sh %Q{(cd #{termbox_build_root}; ./waf build)}
+    FileUtils.mkdir_p build_dir
+
+    if !File.exists? termbox_build_root
+      Dir.chdir(build_dir) do
+        sh %Q{git clone #{termbox_url}}
+      end
     end
+
+    if !File.exists? termbox_a
+      Dir.chdir(termbox_build_root) do
+        sh %Q{./waf configure}
+        sh %Q{./waf build}
+      end
+    end
+
     self.linker.flags_before_libraries << termbox_a
     self.linker.libraries.delete 'termbox'
     [self.cc, self.cxx, self.objc, self.mruby.cc, self.mruby.cxx, self.mruby.objc].each do |cc|
       cc.include_paths << termbox_src
     end
+
+  end
+
+  if build.cc.respond_to? :search_header_path and build.cc.search_header_path 'termbox.h'
+    spec.cc.defines += ['HAVE_TERMBOX_H']
+    spec.linker.libraries << 'termbox'
+  else
+    spec.build_termbox
   end
 end
