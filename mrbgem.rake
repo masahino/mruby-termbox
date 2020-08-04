@@ -1,6 +1,8 @@
 MRuby::Gem::Specification.new('mruby-termbox') do |spec|
   spec.license = 'MIT'
   spec.authors = 'masahino'
+  spec.add_dependency 'mruby-string-ext'
+  spec.add_dependency 'mruby-numeric-ext'
 
   spec.linker.libraries << 'termbox'
 
