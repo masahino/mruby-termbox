@@ -262,7 +262,11 @@ mrb_termbox_event_ch(mrb_state *mrb, mrb_value self)
 {
   struct tb_event *event = (struct tb_event *)DATA_PTR(self);
   mrb_value ch = mrb_fixnum_value(event->ch);
+#ifdef MRB_UTF8_STRING
   return mrb_funcall(mrb, ch, "chr", 1, mrb_str_new_cstr(mrb, "UTF-8"));
+#else
+  return mrb_funcall(mrb, ch, "chr", 0);
+#endif
 }
 
 mrb_value
@@ -297,11 +301,35 @@ mrb_value
 mrb_termbox_cell_init(mrb_state *mrb, mrb_value self)
 {
   struct tb_cell *cell;
-  
+  mrb_int argc;
+  mrb_value str, ch;
+  mrb_int fg, bg;
+
   cell = mrb_malloc(mrb, sizeof(struct tb_cell));
   cell->ch = 0;
   cell->fg = 0;
   cell->bg = 0;
+
+  argc = mrb_get_args(mrb, "|oii", &str, &fg, &bg);
+  if (argc > 0) {
+    switch(mrb_type(str)) {
+      case MRB_TT_FIXNUM:
+      ch = str;
+      break;
+      case MRB_TT_STRING:
+      ch = mrb_funcall(mrb, str, "ord", 0);
+      break;
+      default:
+      mrb_raise(mrb, E_ARGUMENT_ERROR, "invalid parameter");
+    }
+    cell->ch = mrb_fixnum(ch);
+  }
+  if (argc > 1) {
+    cell->fg = fg;
+  }
+  if (argc > 2) {
+    cell->bg = bg;
+  }
   DATA_TYPE(self) = &mrb_termbox_cell_data_type;
   DATA_PTR(self) = cell;
 
@@ -313,7 +341,11 @@ mrb_termbox_cell_ch(mrb_state *mrb, mrb_value self)
 {
   struct tb_cell *cell = (struct tb_cell *)DATA_PTR(self);
   mrb_value ch = mrb_fixnum_value(cell->ch);
+#ifdef MRB_UTF8_STRING
   return mrb_funcall(mrb, ch, "chr", 1, mrb_str_new_cstr(mrb, "UTF-8"));
+#else
+  return mrb_funcall(mrb, ch, "chr", 0);
+#endif
 }
 
 mrb_value
@@ -542,7 +574,7 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
   mrb_define_const(mrb, termbox_module, "KEY_BACKSPACE2", mrb_fixnum_value(TB_KEY_BACKSPACE2));
   mrb_define_const(mrb, termbox_module, "KEY_CTRL_8", mrb_fixnum_value(TB_KEY_CTRL_8));
 
-  mrb_define_method(mrb, termbox_cell, "initialize", mrb_termbox_cell_init, MRB_ARGS_NONE());
+  mrb_define_method(mrb, termbox_cell, "initialize", mrb_termbox_cell_init, MRB_ARGS_OPT(3));
   mrb_define_method(mrb, termbox_cell, "ch", mrb_termbox_cell_ch, MRB_ARGS_NONE());
   mrb_define_method(mrb, termbox_cell, "fg", mrb_termbox_cell_fg, MRB_ARGS_NONE());
   mrb_define_method(mrb, termbox_cell, "bg", mrb_termbox_cell_bg, MRB_ARGS_NONE());
