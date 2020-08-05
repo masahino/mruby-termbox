@@ -16,7 +16,7 @@ end
 
 ![keyboard](https://user-images.githubusercontent.com/381912/65832895-409ec780-e305-11e9-8779-f28373902544.png)
 
-![paint](https://user-images.githubusercontent.com/381912/89362854-d9faef00-d709-11ea-89e5-b0c1d47c1df5.gif)
+![paint](https://user-images.githubusercontent.com/381912/89363562-7671c100-d70b-11ea-878b-3d13d70130fe.gif)
 
 ## License
 under the MIT License:
