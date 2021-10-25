@@ -29,17 +29,6 @@ mrb_termbox_init_file(mrb_state *mrb, mrb_value self)
 }
 
 mrb_value
-mrb_termbox_init_fd(mrb_state *mrb, mrb_value self)
-{
-  int ret;
-  mrb_int fd;
-
-  mrb_get_args(mrb, "i", &fd);
-  ret = tb_init_fd(fd);
-  return mrb_fixnum_value(ret);
-}
-
-mrb_value
 mrb_termbox_shutdown(mrb_state *mrb, mrb_value self)
 {
   tb_shutdown();
@@ -210,7 +199,7 @@ mrb_termbox_utf8_char_length(mrb_state *mrb, mrb_value self)
   mrb_int ret;
 
   mrb_get_args(mrb, "z", &c);
-  ret = tb_utf8_char_length(c[0]);
+  ret = utf8_char_length(c[0]);
   return mrb_fixnum_value(ret);
 }
 
@@ -221,7 +210,7 @@ mrb_termbox_utf8_char_to_unicode(mrb_state *mrb, mrb_value self)
   uint32_t out;
   mrb_int ret;
   mrb_get_args(mrb, "z", &c);
-  ret = tb_utf8_char_to_unicode(&out, c);
+  ret = utf8_char_to_unicode(&out, c);
   return mrb_fixnum_value(out);
 }
 
@@ -232,7 +221,7 @@ mrb_termbox_utf8_unicode_to_char(mrb_state *mrb, mrb_value self)
   char out[8];
   int ret;
   mrb_get_args(mrb, "i", &c);
-  ret = tb_utf8_unicode_to_char(out, c);
+  ret = utf8_unicode_to_char(out, c);
   return mrb_str_new_cstr(mrb, out);
 }
 
@@ -433,7 +422,6 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
 
   mrb_define_class_method(mrb, termbox_module, "init", mrb_termbox_init, MRB_ARGS_NONE());
   mrb_define_class_method(mrb, termbox_module, "init_file", mrb_termbox_init_file, MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb, termbox_module, "init_fd", mrb_termbox_init_fd, MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb, termbox_module, "shutdown", mrb_termbox_shutdown, MRB_ARGS_NONE());
 
   mrb_define_class_method(mrb, termbox_module, "width", mrb_termbox_width, MRB_ARGS_NONE());
@@ -472,6 +460,7 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
   mrb_define_const(mrb, termbox_module, "OUTPUT_256", mrb_fixnum_value(TB_OUTPUT_256));
   mrb_define_const(mrb, termbox_module, "OUTPUT_216", mrb_fixnum_value(TB_OUTPUT_216));
   mrb_define_const(mrb, termbox_module, "OUTPUT_GRAYSCALE", mrb_fixnum_value(TB_OUTPUT_GRAYSCALE));
+  mrb_define_const(mrb, termbox_module, "OUTPUT_TRUECOLOR", mrb_fixnum_value(TB_OUTPUT_TRUECOLOR));
 
   mrb_define_class_method(mrb, termbox_module, "select_output_mode", mrb_termbox_select_output_mode,
     MRB_ARGS_REQ(1));

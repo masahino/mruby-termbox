@@ -9,15 +9,16 @@ assert("constants") do
   assert_equal 0x07, Termbox::CYAN
   assert_equal 0x08, Termbox::WHITE
 
-  assert_equal 0x0100, Termbox::BOLD
-  assert_equal 0x0200, Termbox::UNDERLINE
-  assert_equal 0x0400, Termbox::REVERSE
+  assert_equal 0x01000000, Termbox::BOLD
+  assert_equal 0x02000000, Termbox::UNDERLINE
+  assert_equal 0x04000000, Termbox::REVERSE
 
   assert_equal 0, Termbox::OUTPUT_CURRENT
   assert_equal 1, Termbox::OUTPUT_NORMAL
   assert_equal 2, Termbox::OUTPUT_256
   assert_equal 3, Termbox::OUTPUT_216
   assert_equal 4, Termbox::OUTPUT_GRAYSCALE
+  assert_equal 5, Termbox::OUTPUT_TRUECOLOR
 end
 
 assert('size') do
