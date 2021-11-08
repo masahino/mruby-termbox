@@ -168,11 +168,22 @@ mrb_termbox_select_output_mode(mrb_state *mrb, mrb_value self)
 mrb_value
 mrb_termbox_peek_event(mrb_state *mrb, mrb_value self)
 {
+  struct tb_event *event = (struct tb_event *)mrb_malloc(mrb, sizeof(struct tb_event));;
+  struct RClass *event_class = mrb_class_get_under(mrb, mrb_module_get(mrb, "Termbox"), "Event");
+  mrb_value event_obj = mrb_obj_value(Data_Wrap_Struct(mrb, event_class, &mrb_termbox_event_data_type, NULL));
   mrb_int timeout;
   int ret = 0;
   mrb_get_args(mrb, "i", &timeout);
-  mrb_raise(mrb, E_NOTIMP_ERROR, "not yet implemented");
-  return mrb_fixnum_value(ret);
+  ret = tb_peek_event(event, timeout);
+  if (ret == 0) {
+    return mrb_nil_value();
+  }
+  if (ret < 0) {
+    return mrb_fixnum_value(ret);
+  }
+  DATA_TYPE(event_obj) = &mrb_termbox_event_data_type;
+  DATA_PTR(event_obj) = event;
+  return event_obj;
 }
 
 mrb_value
