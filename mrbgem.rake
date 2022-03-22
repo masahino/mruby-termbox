@@ -7,22 +7,26 @@ MRuby::Gem::Specification.new('mruby-termbox') do |spec|
   spec.linker.libraries << 'termbox'
 
   def spec.build_termbox
-    termbox_url = "https://github.com/nullgemm/termbox_next"
+    termbox_url = 'https://github.com/nullgemm/termbox_next'
     termbox_build_root = "#{build_dir}/termbox_next"
     termbox_src = "#{termbox_build_root}/src"
     termbox_a = "#{termbox_build_root}/bin/termbox.a"
 
     FileUtils.mkdir_p build_dir
 
-    if !File.exists? termbox_build_root
+    if !File.exist? termbox_build_root
       Dir.chdir(build_dir) do
-        sh %Q{git clone #{termbox_url}}
+        sh %(git clone #{termbox_url})
       end
     end
 
-    if !File.exists? termbox_a
+    if !File.exist? termbox_a
       Dir.chdir(termbox_build_root) do
-        sh %Q{make}
+        if RUBY_PLATFORM.downcase =~ /msys|mingw/
+          sh %(make FLAGS="-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE")
+        else
+          sh %(make)
+        end
       end
     end
 
