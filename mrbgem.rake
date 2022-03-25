@@ -22,7 +22,7 @@ MRuby::Gem::Specification.new('mruby-termbox') do |spec|
 
     if !File.exist? termbox_a
       Dir.chdir(termbox_build_root) do
-        if RUBY_PLATFORM.downcase =~ /msys|mingw/
+        if RUBY_PLATFORM.downcase =~ /msys|mingw|cygwin/
           sh %(make FLAGS="-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE")
         else
           sh %(make)
