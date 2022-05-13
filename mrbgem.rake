@@ -7,7 +7,7 @@ MRuby::Gem::Specification.new('mruby-termbox') do |spec|
   spec.linker.libraries << 'termbox'
 
   def spec.build_termbox
-    termbox_url = 'https://github.com/nullgemm/termbox_next'
+    termbox_url = 'https://github.com/masahino/termbox_next'
     termbox_build_root = "#{build_dir}/termbox_next"
     termbox_src = "#{termbox_build_root}/src"
     termbox_a = "#{termbox_build_root}/bin/termbox.a"

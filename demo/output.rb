@@ -1,10 +1,11 @@
-$chars = "nnnnnnnnnbbbbbbbbbuuuuuuuuuBBBBBBBBB"
+$chars = "nnnnnnnnnbbbbbbbbbuuuuuuuuuiiiiiiiiiBBBBBBBBB"
 
 $all_attrs = [
   0,
   Termbox::BOLD,
   Termbox::UNDERLINE,
-  Termbox::BOLD | Termbox::UNDERLINE,
+  Termbox::ITALIC,
+  Termbox::BOLD | Termbox::UNDERLINE | Termbox::ITALIC,
   ]
 
 def next_char(current)
@@ -17,7 +18,7 @@ end
 
 def draw_line(x, y, bg)
   current_char = 0
-  for a in 0..3
+  for a in 0..4
     for c in Termbox::DEFAULT..Termbox::WHITE
       fg = $all_attrs[a] | c
       Termbox.change_cell(x, y, $chars[current_char], fg, bg)

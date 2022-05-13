@@ -430,6 +430,9 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
   mrb_define_const(mrb, termbox_module, "BOLD", mrb_fixnum_value(TB_BOLD));
   mrb_define_const(mrb, termbox_module, "UNDERLINE", mrb_fixnum_value(TB_UNDERLINE));
   mrb_define_const(mrb, termbox_module, "REVERSE", mrb_fixnum_value(TB_REVERSE));
+#ifdef TB_ITALIC
+  mrb_define_const(mrb, termbox_module, "ITALIC", mrb_fixnum_value(TB_ITALIC));
+#endif
 
   mrb_define_class_method(mrb, termbox_module, "init", mrb_termbox_init, MRB_ARGS_NONE());
   mrb_define_class_method(mrb, termbox_module, "init_file", mrb_termbox_init_file, MRB_ARGS_REQ(1));
