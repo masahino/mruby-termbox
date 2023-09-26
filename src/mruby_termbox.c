@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 #include <mruby.h>
 #include <mruby/array.h>
 #include <mruby/class.h>
@@ -403,6 +405,48 @@ mrb_termbox_cell_set_bg(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+#ifdef MRB_UTF8_STRING
+int
+mrb_utf8_display_width(const char *s) {
+  wchar_t wch;
+  if (mbtowc(&wch, s, MB_CUR_MAX) < 1) return 1;
+  int width = wcwidth(wch);
+  return width >= 0 ? width : 1;
+}
+#endif
+
+mrb_value
+mrb_termbox_draw_text(mrb_state *mrb, mrb_value self)
+{
+  mrb_value str;
+  mrb_int x, y, fg, bg, len;
+  char *p, *e;
+
+  mrb_get_args(mrb, "iiSii", &x, &y, &str, &fg, &bg);
+
+  p = RSTRING_PTR(str);
+  len = RSTRING_LEN(str);
+  e = p + len;
+
+  while (p < e) {
+#ifdef MRB_UTF8_STRING
+    uint32_t c;
+    utf8_char_to_unicode(&c, p);
+    tb_change_cell(x, y, c, fg, bg);
+    mrb_int ulen = utf8_char_length(*p);
+    x += mrb_utf8_display_width(p);
+    len -= ulen;
+    p += ulen;
+#else
+    tb_change_cell(x, y, (uint32_t)*p, fg, bg);
+    x++;
+    p++;
+#endif
+  }
+  return mrb_nil_value();
+}
+
+
 void
 mrb_mruby_termbox_gem_init(mrb_state *mrb)
 {
@@ -586,6 +630,8 @@ mrb_mruby_termbox_gem_init(mrb_state *mrb)
   mrb_define_method(mrb, termbox_cell, "fg=", mrb_termbox_cell_set_fg, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, termbox_cell, "bg=", mrb_termbox_cell_set_bg, MRB_ARGS_REQ(1));
 
+  /* additional methods */
+  mrb_define_class_method(mrb, termbox_module, "draw_text", mrb_termbox_draw_text, MRB_ARGS_REQ(5));
 }
 
 void
