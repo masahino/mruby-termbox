@@ -4,6 +4,7 @@ MRuby::Gem::Specification.new('mruby-termbox') do |spec|
   spec.add_dependency 'mruby-string-ext'
   spec.add_dependency 'mruby-numeric-ext'
 
+  spec.cc.defines << '_XOPEN_SOURCE'
   spec.linker.libraries << 'termbox'
 
   def spec.build_termbox
